@@ -39,7 +39,7 @@ def get_distance_dict(file_path):
     return distance_dict
 
 
-distance_dict = get_distance_dict("data\e3795.dat")
+distance_dict = get_distance_dict("data\d\d159.dat")
 points = set()
 for (i, j) in distance_dict.keys():
     points.add(i)
