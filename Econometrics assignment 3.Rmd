@@ -1,0 +1,301 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+# Question 1
+
+## Question 1
+
+## 1.1
+
+Let $\mu_{k}$ be the k-th central moment:
+
+$\mu_{k} = E[(x_{1} - E[x_{1}])^{k}]$ Then we have that:
+
+$$ \theta_{1} = \mu_{1} = 0$$ $$ \theta_{2} = \mu_{2} (variance)$$
+
+$$ \theta_{3} = \mu_{3} / (\mu_{2})^{3/2}$$
+
+$$ \theta_{4} = \mu_{4} /(\mu_{2})^{2}$$
+
+Then, using the definition of $\mu_{k}$, we can write down the
+population and sample equations of the following parameters of interest:
+
+$$\theta = (\theta_{2}, \theta_{3}, \theta_{4})^{T}$$
+
+$$E[(x_{1}-E[x_{1}])^{2} - \theta_{2}] = 0$$
+
+$$ E[\frac{(x_{1}-E[x_{1}])^{3}}{(E[(x_{1}-E[x_{1}])^{2}])^{3/2}} - \theta_{3}] = 0$$
+
+$$ E[\frac{(x_{1}-E[x_{1}])^{4}]}{(E[(x_{1}-E[x_{1}])^{2}])^{2}} - \theta_{4}] = 0$$
+
+
+One could rewrite the equations, so that we have no division in the
+expectation, but a multiplication of theta. The last two equations then
+will be as follows:
+
+$$E[(x_{1} - E[x_{1}])^{3} - \theta_{3}(\theta_{2})^{3/2}] = 0$$
+
+$$E[(x_{1}-E[x_{1}])^{4} - \theta_{4}(\theta_{2})^{2}] = 0$$
+
+
+The sample equations will be as follows:
+$$\frac{1}{n} \sum_{i=n}^{n} ((x_{i} - E[x_{i}])^{2} - \theta_{2}) = 0$$
+
+$$\frac{1}{n} \sum_{i=n}^{n} (\frac{(x_{i} - E[x_{i}])^{3}}{(\frac{1}{n} \sum_{i=n}^{n} (x_{i} - E[x_{i}])^{2})^{3/2}} - \theta_{3}) = 0$$
+
+$$\frac{1}{n} \sum_{i=n}^{n} (\frac{(x_{i} - E[x_{i}])^{4}}{(\frac{1}{n} \sum_{i=n}^{n} (x_{i} - E[x_{i}])^{2})^{2}}  - \theta_{4})= 0$$
+
+
+For the sample moment equations, we could rewrite it in the same way as
+for the population moment equations, so that we obtain a sum without a
+division. This will look as follows:
+
+$$\frac{1}{n} \sum_{i=n}^{n} ((x_{i} - E[x_{i}])^{3} - \theta_{3} (\theta_{2})^{3/2}) = 0$$
+$$\frac{1}{n} \sum_{i=n}^{n} ((x_{i} - E[x_{i}])^{4}  - \theta_{4} (\theta_{2})^{2}) =0$$
+# Question 2
+
+# Side note:
+
+# Note:
+
+Given our knowledge of $\theta_{1}$, we omit it from the moment function $g_{i}(\theta)$. This decision stems from our focus on the parameter vector of interest, $\theta = (\theta_{2}, \theta_{3}, \theta_{4})^{T}$. While one might argue for including $\theta_{1}$ to encompass all parameters, doing so introduces an extra equation and parameter.
+
+However, this addition doesn't pose any issues as we maintain the 'exact case' where the number of equations matches the number of parameters. Nonetheless, since $\theta_{1}$ is known and not a parameter of interest, it is excluded from the moment function $g_{i}(\theta)$.
+Answer:
+
+We define the moment function $g_{i}(\theta)$, such that
+$E[g_{i}(\theta)] =0$, as follows:
+
+$$g_{i}(\theta) = 
+\begin{pmatrix}
+  ((x_{i} - E[x_{i}])^{2} - \theta_{2}) \\
+  (\frac{(x_{i} - E[x_{i}])^{3}}{(\frac{1}{n} \sum_{i=n}^{n} (x_{i} -             E[x_{i}])^{2})^{3/2}} - \theta_{3}) \\
+  (\frac{(x_{i} - E[x_{i}])^{4}}{(\frac{1}{n} \sum_{i=n}^{n} (x_{i} -             E[x_{i}])^{2})^{2}}  - \theta_{4})
+\end{pmatrix}
+ = 
+ \begin{pmatrix}
+ 0 \\
+ 0 \\
+ 0 \\
+ \end{pmatrix}$$
+
+Or, rewritten:
+
+$$g_{i}(\theta) = 
+\begin{pmatrix}
+  (x_{i} - E[x_{i}])^{2} - \theta_{2} \\
+  (x_{i} - E[x_{i}])^{3} - \theta_{3} (\theta_{2})^{3/2} \\
+  (x_{i} - E[x_{i}])^{4}  - \theta_{4} (\theta_{2})^{2}
+\end{pmatrix}
+ = 
+ \begin{pmatrix}
+ 0 \\
+ 0 \\
+ 0 \\
+ \end{pmatrix}$$
+
+# Question 3
+#3a
+
+## Population Matrix S
+
+To find the population matrix $\(S\)$, we need to calculate the following matrix:
+
+$$S = \begin{bmatrix} S_{11} & S_{12} & S_{13}\\
+S_{21} & S_{22} & S_{23}\\
+S_{31} & S_{32} & S_{33}
+\end{bmatrix} $$
+
+with $S_{ij} = \text{cov}(i,j)$.
+
+Under the null hypothesis of $F$ being the normal distribution, we have
+
+$$\mu_{2k} = \frac{\sigma^{2k}(2k)!}{(k!2^k)}, \space \mu_{2k+1} = 0 $$
+
+Hence,
+
+$$ k=1; \space \mu_{2} = \mu_{2k} = \theta_{2} = \sigma^{2}, \text{ and } \mu_{3} = \mu_{2k+1} =0, k=2; \space \mu_{4} = \mu_{2k} = \frac{\sigma^{4}(4)!}{(2!2^2)} = 3\sigma^{4}, \mu_{5} = 0 $$
+$$k=3; \space \mu_{6} = \sigma^{6} \frac{6!}{3!2^{3}} = \sigma^{6} \frac{120}{8} = 15 \sigma^{6}$$
+$$ k=4; \space \mu_{8} = \sigma^{8} \frac{8!}{4!2^{4}} = \sigma^{8} \frac{1680}{16} = 105\sigma^{8}, \text{ and } \mu_{9} = 0 $$
+
+Hence,
+
+$$ \theta_{3} = \frac{\mu_3}{\theta_{2}^{\frac{3}{2}}} =\frac{0}{(\sigma^{2})^{\frac{3}{2}}}=0, \text{ and } \theta_{4}=\frac{\mu_{4}}{\theta_{2}^{2}} = \frac{\frac{\sigma^{4}(4)!}{(2!2^2)}}{(\sigma^{2})^{2}}=\frac{3\sigma^{4}}{\sigma^{4}}=3 $$
+
+Let $\(c_{k} = (x_{i} -E[x_{i}])^{k}\)$, such that $\(E[c_{k}]=\mu_{k}\)$ and
+$c_{k}c_{k} = c_{k+k}$. Calculating the $S_{ij}$ with
+
+$$S_{ij} = E[g_{i}(\theta_{0})(g_{j}(\theta_{0}))^T] $$
+
+we get the new population matrix, where
+
+$$S_{11} = E[(c_2 -\theta_2)(c_2 - \theta_2)] = E[(c_2c_2)]  -2E[c_2 \theta_2] + \theta_{2}^{2} = E[c_{4}] - 2E[c_2] \sigma^2 + \sigma^4 = \mu_{4} -2\sigma^{2}\mu_{2} + \sigma^{4} = 2\sigma^{4}$$
+
+$$S_{12} = S_{21} = E[(c_{2} - \theta_{2})(c_{3} - \theta_{3}\theta_{2}^{3/2})^{T}] = E[(c_{5})] - 0 - 0 + \theta_{2}^{3}*0 = \mu_5 = 0$$
+
+$$S_{13} = S_{31} = E[(c_2 - \theta_2)(c_4 -\theta_4 \theta_{2}^{2})] = E[c_6] - 3\sigma^{4}E[c_2] -\sigma^2E[c_4] + 3\sigma^{6} =\mu_{6} -3\sigma^{4}\mu_2 -\sigma^2 \mu_4 +3\sigma^6 = 15\sigma^6 -3\sigma^6 - 3\sigma^6 + 3\sigma^6 = 12\sigma^6 $$
+
+$$S_{22} = E[(c_3 - \theta_3\theta_{2}^{3/2})(c_3 - \theta_3\theta_{2}^{3/2})] = E[c_6] -2*0*\theta_{2}^{3/2}E[c_3] + (\theta_3\theta_{2}^{3/2})^2 = E[c_6] = \mu_6 = 15\sigma^6$$
+
+$$S_{23} = S_{32} = E[(c_3-\theta_3\theta_{2}^{3/2})(c_4 - \theta_4\theta_2^2)] = E[c_7] -\theta_4\theta_2^2E[c_3] - 0*E[c_4] + 0 = \mu_7 -\theta_4\theta_2^2\mu_3 = 0-0 =0 $$
+
+$$S_{33} = E[(c_4 -\theta_4\theta_2^2 )(c_4 -\theta_4\theta_2^2 )]= E[c_8] -2\theta_4\theta_2^2E[c_4] + (\theta_4\theta_2^2)^2 = \mu_8 -2(3\sigma^4)\mu_4 + (3\sigma^4)^2 = 105\sigma^8 -18\sigma^8 + 9\sigma^8 = 96\sigma^8 $$
+
+Then if we continue derivation, we will obtain the full matrix \(S\):
+
+$$ S = \begin{bmatrix} 2\sigma^{4} & 0 & 12\sigma^{6}\\
+0 & 15\sigma^{6} & 0\\
+12\sigma^{6} & 0 & 96\sigma^{8}
+\end{bmatrix} $$
+
+#3.b
+
+# 1.3.b
+
+The Jacobian matrix is defined as:
+
+$$ G = \begin{bmatrix} G_{11} & G_{12} & G_{13}\\
+G_{21} & G_{22} & G_{23}\\
+G_{31} & G_{32} & G_{33}
+\end{bmatrix} $$
+
+with
+
+$$ G_{ij} = \mathbb{E}\left[\frac{\partial g_{i}(\theta_{0})}{\partial \theta^T_{j+1}}\right] $$
+
+This gives the following entries:
+
+$$ G_{11} = \mathbb{E}\left[\frac{\partial g_{1}(\theta_{0})}{\partial \theta^T_{2}}\right] = \frac{\partial \mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^2 - \theta_{2}}{\partial \theta_{2}} = -1 $$
+
+$$ G_{12} = \mathbb{E}\left[\frac{\partial g_{1}(\theta_{0})}{\partial \theta^T_{3}}\right] = \frac{\partial \mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^2 - \theta_{2}}{\partial \theta_{3}} = 0 $$
+
+$$ G_{13} = \mathbb{E}\left[\frac{\partial g_{1}(\theta_{0})}{\partial \theta^T_{4}}\right] = \frac{\partial \mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^2 - \theta_{2}}{\partial \theta_{4}} = 0 $$
+
+$$ G_{21} = \mathbb{E}\left[\frac{\partial g_{2}(\theta_{0})}{\partial \theta^T_{2}}\right] = \frac{\partial \mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^{3} - \theta_{3} (\theta_{2})^{3/2}}{\partial \theta_{2}} = -\frac{3}{2}(\theta_{2}^{\frac{1}{2}})\theta_{3} $$
+
+$$ G_{22} = \mathbb{E}\left[\frac{\partial g_{2}(\theta_{0})}{\partial \theta^T_{3}}\right] = \frac{\partial \mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^{3} - \theta_{3} (\theta_{2})^{3/2}}{\partial \theta_{3}} = -\theta_{2}^\frac{3}{2} $$
+
+$$ G_{23} = \mathbb{E}\left[\frac{\partial g_{2}(\theta_{0})}{\partial \theta^T_{4}}\right] = \frac{\partial \mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^{3} - \theta_{3} (\theta_{2})^{3/2}}{\partial \theta_{4}} = 0 $$
+
+$$ G_{31} = \mathbb{E}\left[\frac{\partial g_{3}(\theta_{0})}{\partial \theta^T_{2}}\right] = \frac{\mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^{4}  - \theta_{4} (\theta_{2})^{2}}{\partial \theta_{2}} = -2\theta_{2}\theta_{4} $$
+
+$$ G_{32} = \mathbb{E}\left[\frac{\partial g_{3}(\theta_{0})}{\partial \theta^T_{3}}\right] = \frac{\mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^{4}  - \theta_{4} (\theta_{2})^{2}}{\partial \theta_{3}} = 0 $$
+
+$$ G_{33} = \mathbb{E}\left[\frac{\partial g_{3}(\theta_{0})}{\partial \theta^T_{4}}\right] = \frac{\mathbb{E}[x_{1} - \mathbb{E}[x_{1}]]^{4}  - \theta_{4} (\theta_{2})^{2}}{\partial \theta_{4}} = -\theta_{2}^{2} $$
+
+This means our Jacobian matrix looks as follows:
+
+$$ G = \begin{bmatrix} -1 & 0 & 0\\
+-\frac{3}{2}(\theta_{2}^{\frac{1}{2}})\theta_{3} & -\theta_{2}^\frac{3}{2} & 0\\
+-2\theta_{2}\theta_{4} & 0 & -\theta_{2}^{2}
+\end{bmatrix} $$
+
+#1.3c
+
+Now we will find the asymptotic variance $$ V $$ of $$ \sqrt{n}(\hat{\theta}_{n} - \theta_{0}) $$, with the asymptotic variance formula for the GMM estimator. This is:
+
+$$ \text{as } n \overset{p}{\to} \infty, \sqrt{n}(\hat{\theta}_{n} - \theta_{0}) \xrightarrow{d} N(0,V) $$
+
+where
+
+$$ V = (G^{T}WG)^{-1}G^{T}WSWG(G^{T}WG)^{-1}$$
+
+In our case, we have already computed $$ G $$ and $$ S $$, while $$ W = I $$ because the number of parameters is equal to the number of moments. This gives:
+
+$$ V = (G^{T}WG)^{-1}G^{T}WSWG(G^{T}WG)^{-1} $$
+$$ = (G^{T}G)^{-1}G^{T}SG(G^{T}G)^{-1} $$
+$$ = G^{-1}S(G^{T})^{-1} $$
+
+Since it is sufficient to derive the asymptotic distribution under the null hypothesis of $$ F $$ being the normal distribution, we have:
+
+$$ \mu_{2k} = \frac{\sigma^{2k}(2k)!}{(k!2^k)}, \quad \mu_{2k+1} = 0, \quad \theta_{2} = \sigma^2 $$
+
+This gives:
+
+$$ \theta_{3} = \frac{\mu_3}{\theta_{2}^{\frac{3}{2}}} = \frac{0}{(\sigma^{2})^{\frac{3}{2}}} = 0, \quad \text{and} \quad \theta_{4} = \frac{\mu_{4}}{\theta_{2}^{2}} = \frac{\frac{\sigma^{4}(4)!}{(2!2^2)}}{(\sigma^{2})^{2}} = \frac{3\sigma^{4}}{\sigma^{4}} = 3 $$
+
+Which means our Jacobian matrix is:
+
+$$ G = \begin{bmatrix} -1 & 0 & 0\\
+0 & -\sigma^3 & 0\\
+-6\sigma^2 & 0 & -\sigma^4
+\end{bmatrix} $$
+
+Calculating $$ G^{-1} $$ and $$ (G^{T})^{-1} $$ gives:
+
+$$ G^{-1} = \begin{bmatrix} -1 & 0 & 0\\
+0 & \frac{1}{-\sigma^3} & 0\\
+\frac{6}{\sigma^2} & 0 & -\frac{1}{\sigma^4}
+\end{bmatrix} $$
+
+$$ (G^{T})^{-1} = \begin{bmatrix} -1 & 0 & \frac{6}{\sigma^2}\\
+0 & \frac{1}{-\sigma^3} & 0\\
+0 & 0 & -\frac{1}{\sigma^4}
+\end{bmatrix} $$
+
+Which means we have:
+
+$$ V = \begin{bmatrix} -1 & 0 & 0\\
+0 & \frac{1}{-\sigma^3} & 0\\
+\frac{6}{\sigma^2} & 0 & -\frac{1}{\sigma^4}
+\end{bmatrix} \begin{bmatrix} 2\sigma^{4} & 0 & 12\sigma^{6}\\
+0 & 15\sigma^{6} & 0\\
+12\sigma^{6} & 0 & 96\sigma^{8}
+\end{bmatrix} \begin{bmatrix} -1 & 0 & \frac{6}{\sigma^2}\\
+0 & \frac{1}{-\sigma^3} & 0\\
+0 & 0 & -\frac{1}{\sigma^4}
+\end{bmatrix} = \begin{bmatrix} 2\sigma^4 & 0 & 0\\
+0 & 15 & 0\\
+0 & 0 & 24
+\end{bmatrix} $$
+
+# Question 4
+
+In exercise three, we observed that as the sample size $ n $ approaches infinity, the distribution of $ \sqrt{n}(\hat{\theta}_{n}-\theta_{0}) $ converges to a normal distribution with mean 0 and variance $ V $, where 
+
+$$ V = \begin{bmatrix} 2\sigma^4 & 0 & 0\\0 & 15 & 0\\0 & 0 & 24\end{bmatrix} $$
+
+Now, we aim to test the hypothesis: $ H_{0}: \theta_{3} = 0, \theta_{4} = 3 $ against the alternative $ H_{1}: \theta_{3} \neq 0, \theta_{4} \neq 3 $ using the Wald test.
+
+This hypothesis can be expressed as: 
+
+$$ H_{0}: (R\hat{\theta}_{n} - q) = 0; \quad H_{1}: (R\hat{\theta}_{n} - q) \neq 0 $$
+
+Where:
+- $ R = \begin{bmatrix} 0 & 1 & 0\\0 & 0 & 1\\\end{bmatrix} $
+- $ \hat{\theta} = \begin{bmatrix} \hat{\theta}_{2} & \hat{\theta}_{3} & \hat{\theta}_{4}\\\end{bmatrix}^T $
+- $ q = \begin{bmatrix} 0\\ 3 \\\end{bmatrix} $
+
+The Wald test statistic, denoted as $ W_n $, is constructed as:
+
+$$ W_n = n(R\hat{\theta}_{n} - q)^T[R\hat{V_n}R^T]^{-1}(R\hat{\theta}_{n} - q) \xrightarrow{d} X^2_J $$
+
+Here, $ J = 2 $ since $ R $ has a rank of 2.
+
+After defining the parameters, and substituting $ \hat{V_n} = V $, we compute:
+
+$$ W_n = n(\frac{\hat{\theta}^2_3}{15}+\frac{\hat{\theta}_4-3}{24}) \xrightarrow{p} X^2_2 $$
+
+To facilitate computation, we introduce $ m_{k} = \sum_{i=1}^{n}\frac{(x_{i} -\bar{x})^k}{n} $. According to the Law of Large Numbers, $ m_{k} \xrightarrow{p} \mu_{k} $ as $ n \rightarrow \infty $.
+
+Using the Continuous Mapping Theorem, we derive:
+
+$$ \hat{\theta}_{3} = \frac{m_{3}}{m_{2}^{3/2}} \xrightarrow{p} \frac{\mu_{3}}{\mu_{2}^{3/2}} = \theta_{3} $$ 
+
+and 
+
+$$ \hat{\theta}_{4} = \frac{m_{4}}{m_{2}^{2}} \xrightarrow{p} \frac{\mu_{4}}{\mu_{2}^{2}} $$
+
+Therefore, 
+
+$$ W_n = n(\frac{\frac{m_{3}^{2}}{m_{2}^{3}}}{15}+\frac{\frac{m_{4}}{m_{2}^{2}}-3}{24}) $$
