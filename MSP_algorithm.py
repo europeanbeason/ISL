@@ -2,7 +2,8 @@ import sys
 import itertools
 import pandas as pd
 import os
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+
 
 class Points:
     def __init__(self, x_coordinate, y_coordinate):
@@ -12,10 +13,33 @@ class Points:
     def __str__(self):
         return f"({self.x_coordinate}, {self.y_coordinate})"
 
+
 def calculate_distance(point1, point2):
     x_distance = abs(point1.x_coordinate - point2.x_coordinate)
     y_distance = abs(point1.y_coordinate - point2.y_coordinate)
     return max(x_distance, y_distance)
+
+
+def get_points_dict(file_path):
+    points_dict = {}
+    with open(file_path, "r") as file:
+        try:
+            num_of_points = int(file.readline().strip())
+        except ValueError:
+            print("Invalid file format")
+            return None
+
+        points_dict[0] = Points(0, 0)
+        for i in range(1, num_of_points + 1):
+            try:
+                _, x, y = file.readline().split()
+                points_dict[i] = Points(float(x), float(y))
+            except ValueError:
+                print("Invalid file format")
+                return None
+
+    return points_dict
+
 
 def min_key(keys, mst_set):
     min_val = sys.maxsize
@@ -25,93 +49,79 @@ def min_key(keys, mst_set):
             min_val = keys[i]
             min_index = i
     return min_index
-#prims algorithm for Minimum Spanning Tree (MST)
-def prim_mst(points_list):
-    n = len(points_list)
+
+
+def prim_mst(points_dict):
+    n = len(points_dict)
     parent = [-1] * n
     keys = [sys.maxsize] * n
     mst_set = [False] * n
-    
     keys[0] = 0
     parent[0] = -1
-    
-    for _ in range(n-1):
+    for _ in range(n - 1):
         u = min_key(keys, mst_set)
         mst_set[u] = True
         for v in range(n):
-            if not mst_set[v]:
-                dist = calculate_distance(points_list[u], points_list[v])
+            if not mst_set[v] and v in points_dict:
+                dist = calculate_distance(points_dict[u], points_dict[v])
                 if dist < keys[v]:
                     parent[v] = u
                     keys[v] = dist
-    
+
     return parent
 
-path = r"C:\Users\Tiziano\Documents\Tilburg\Second year\ISL\data\\"
-dir_list = os.listdir(path)
-u = 0
-dfs = {}  # Dictionary to store DataFrames
 
-for file in dir_list:
-    u += 1
-    dft = pd.read_csv(path + file)
-    dft = dft[dft.columns[0]].str.split(" ", expand=True)
-    dft = dft.rename(columns={1: "x_new", 2: "y"})
-    dft = dft.drop(columns=0)
-    dft = dft.dropna()
-    if not ((dft["x_new"] == "0") & (dft["y"] == "0")).any():
-        dft = dft.append({"x_new": "0", "y": "0"}, ignore_index=True)
-    dfs["df" + str(u)] = dft
+def reconstruct_path(parent, points_dict):
+    path_order = []
+    for i in range(1, len(parent)):
+        path_order.append((parent[i], i))
+    path_order.append((0, 0))  # Adding the starting point
 
-a = dfs["df7"]
-a["x_new"] = a["x_new"].astype(float)
-a["y"] = a["y"].astype(float)
+    return path_order
 
-a["y"] = pd.to_numeric(a["y"])
-a.sort_values(by=["x_new", "y"])
 
-# Convert DataFrame rows to Points objects
-points_list = [Points(row['x_new'], row['y']) for _, row in a.iterrows()]
+def plot_tour(points, route):
+    plt.figure(figsize=(10, 6))
 
-parent = prim_mst(points_list)
+    # Plot the points
+    for point in points.values():
+        plt.plot(point.x_coordinate, point.y_coordinate, "bo")
 
-# Reconstruct the path
-path_order = []
-for i in range(1, len(parent)):
-    path_order.append(parent[i])
-path_order.append(0)  # Adding the starting point
+    # Draw the paths
+    for i, j in route:
+        plt.plot(
+            [points[i].x_coordinate, points[j].x_coordinate],
+            [points[i].y_coordinate, points[j].y_coordinate],
+            "b-",
+        )
 
-print("Exact order of points to be traveled:")
-for i in range(len(path_order) - 1):
-    print(f"From {path_order[i]} to {path_order[i + 1]}")
+    plt.xlabel("X coordinate")
+    plt.ylabel("Y coordinate")
+    plt.title("Optimal Tour")
+    plt.grid(True)
+    plt.show()
 
-# Assuming 'path_order' contains the order of points to be traveled
-travel_df = pd.DataFrame(columns=['x_new', 'y'])
+    # Calculate the total distance of the travel path
+    total_distance = 0
+    for i, j in route:
+        point1 = points[i]
+        point2 = points[j]
+        total_distance += calculate_distance(point1, point2)
 
-# Add the point (0, 0) at the beginning and end of the path
-travel_df = travel_df.append({"x_new": 0, "y": 0}, ignore_index=True)
+    print("Total distance of the travel path:", total_distance)
 
-# Add points to the DataFrame based on the order
-for i in path_order:
-    travel_df = travel_df.append(a.iloc[i])
 
-# Add the point (0, 0) at the end of the path
-travel_df = travel_df.append({"x_new": 0, "y": 0}, ignore_index=True)
+# Main function
+def main():
+    file_path = "data\d159.dat"
+    points_dict = get_points_dict(file_path)
+    if points_dict is None:
+        return
 
-# Plot the travel path
-plt.figure(figsize=(8, 6))
-plt.plot(travel_df['x_new'], travel_df['y'], marker='o', linestyle='-')
-plt.title('Travel Path')
-plt.xlabel('x_new')
-plt.ylabel('y')
-plt.grid(True)
-plt.show()
+    parent = prim_mst(points_dict)
+    path_order = reconstruct_path(parent, points_dict)
+    plot_tour(points_dict, path_order)
 
-# Calculate the total distance of the travel path
-total_distance = 0
-for i in range(len(travel_df) - 1):
-    point1 = Points(travel_df.iloc[i]['x_new'], travel_df.iloc[i]['y'])
-    point2 = Points(travel_df.iloc[i+1]['x_new'], travel_df.iloc[i+1]['y'])
-    total_distance += calculate_distance(point1, point2)
 
-print("Total distance of the travel path:", total_distance)
+if __name__ == "__main__":
+    main()
