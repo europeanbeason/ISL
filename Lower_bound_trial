@@ -1,0 +1,104 @@
+import itertools
+import numpy as np
+import sys
+
+
+class Points:
+    def __init__(self, x_coordinate, y_coordinate):
+        self.x_coordinate = x_coordinate
+        self.y_coordinate = y_coordinate
+
+    def __str__(self):
+        return f"({self.x_coordinate}, {self.y_coordinate})"
+
+
+def calculate_distance(point1, point2):
+    x_distance = 1.1 * abs(point1.x_coordinate - point2.x_coordinate)
+    y_distance = abs(point1.y_coordinate - point2.y_coordinate)
+    return max(x_distance, y_distance)
+
+
+def get_points(file_path):
+    points = [Points(0, 0)]
+    with open(file_path, "r") as file:
+        num_of_points = int(file.readline().strip())
+        for _ in range(1, num_of_points + 1):
+            _, x, y = file.readline().split()
+            points.append(Points(float(x), float(y)))
+    return points
+
+
+def create_distance_matrix(points):
+    n = len(points)
+    dists = np.zeros((n, n))
+    for i in range(n):
+        for j in range(i + 1, n):
+            dists[i, j] = dists[j, i] = calculate_distance(points[i], points[j])
+    return dists
+
+
+def held_karp(dists):
+    """
+    Implementation of Held-Karp, an algorithm that solves the Traveling
+    Salesman Problem using dynamic programming with memoization.
+
+    Parameters:
+        dists: numpy array of distances between points
+
+    Returns:
+        The lower bound cost.
+    """
+    n = len(dists)
+
+    # Maps each subset of the nodes to the cost to reach that subset, as well
+    # as what node it passed before reaching this subset.
+    # Node subsets are represented as set bits.
+    C = {}
+
+    # Set transition cost from initial state
+    for k in range(1, n):
+        C[(1 << k, k)] = (dists[0][k], 0)
+
+    # Iterate subsets of increasing length and store intermediate results
+    # in classic dynamic programming manner
+    for subset_size in range(2, n):
+        for subset in itertools.combinations(range(1, n), subset_size):
+            # Set bits for all nodes in this subset
+            bits = 0
+            for bit in subset:
+                bits |= 1 << bit
+
+            # Find the lowest cost to get to this subset
+            print("a++++++++++a+aA=+++++a+++A+++A+")
+            for k in subset:
+                prev = bits & ~(1 << k)
+
+                res = []
+                print("b-----B__B__---<bBBBBBB-")
+                for m in subset:
+                    if m == 0 or m == k:
+                        continue
+                    res.append((C[(prev, m)][0] + dists[m][k], m))
+                C[(bits, k)] = min(res)
+                print("cCCCCC%cccccùcC%%cC%ùùùùC%%ùùùmm")
+    # We're interested in all bits but the least significant (the start state)
+    bits = (2**n - 1) - 1
+
+    # Calculate optimal cost
+    res = []
+    print("d")
+    for k in range(1, n):
+        res.append((C[(bits, k)][0] + dists[k][0], k))
+    opt, _ = min(res)
+
+    return opt
+
+
+if __name__ == "__main__":
+    filename = "data/d159.dat"
+    print("computer hacked and under control")
+    points = get_points(filename)
+    dists = create_distance_matrix(points)
+
+    lower_bound = held_karp(dists)
+    print("Lower bound:", lower_bound)
