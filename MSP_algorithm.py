@@ -75,18 +75,16 @@ def reconstruct_path(parent, points_dict):
     path_order = []
     for i in range(1, len(parent)):
         path_order.append((parent[i], i))
-    path_order.append((0, 0))  # Adding the starting point
-
+    # Add the return to the starting point (0,0)
+    path_order.append((path_order[-1][1], 0))
     return path_order
 
 
 def plot_tour(points, route):
     plt.figure(figsize=(10, 6))
-
     # Plot the points
     for point in points.values():
         plt.plot(point.x_coordinate, point.y_coordinate, "bo")
-
     # Draw the paths
     for i, j in route:
         plt.plot(
@@ -94,10 +92,9 @@ def plot_tour(points, route):
             [points[i].y_coordinate, points[j].y_coordinate],
             "b-",
         )
-
     plt.xlabel("X coordinate")
     plt.ylabel("Y coordinate")
-    plt.title("Optimal Tour")
+    plt.title("Optimal Tour Including Return to Start")
     plt.grid(True)
     plt.show()
 
@@ -109,6 +106,22 @@ def plot_tour(points, route):
         total_distance += calculate_distance(point1, point2)
 
     print("Total distance of the travel path:", total_distance)
+
+
+# Main function adjustment for testing
+def main():
+    file_path = "data/d159.dat"  # Ensure the correct file path
+    points_dict = get_points_dict(file_path)
+    if points_dict is None:
+        return
+
+    parent = prim_mst(points_dict)
+    path_order = reconstruct_path(parent, points_dict)
+    plot_tour(points_dict, path_order)
+
+
+if __name__ == "__main__":
+    main()
 
 
 # Main function
