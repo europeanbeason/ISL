@@ -82,11 +82,12 @@ def TSPoptimization():
     # Generate distance dictionaries and sets of points for each file path
     distance_dicts = {}
     points_sets = {}
+    points_dicts = {}
     for file_path in selected_file_paths:
         try:
-            distance_dict = get_distance_dict(file_path)
+            distance_dict, points_dict = get_distance_dict(file_path)
             distance_dicts[file_path] = distance_dict
-
+            points_dicts[file_path] = points_dict
             points = set()
             for (i, j) in distance_dict.keys():
                 points.add(i)
@@ -126,7 +127,16 @@ def TSPoptimization():
     result_rows = [[os.path.basename(file_path) for file_path in results.keys()],
                    [str(calculate_total_distance(distance_dict=distance_dicts[file_path], route=results[file_path][0], nn=results[file_path][1])) for file_path in results.keys()]]  # Convert distances to strings for display
 
-    # Clear previous results
+    for key, value in results.items():
+        with open(f"{key[:-4]}_best_path.txt", "w") as file:
+            if value[1]:
+                i = 0
+                for point in value[0]:
+                    i += 1
+                    file.write(
+                        f"{i}: {points_dicts[key][point].x_coordinate} {points_dicts[key][point].y_coordinate} \n")
+
+            # Clear previous results
     for i in tree.get_children():
         tree.delete(i)
 

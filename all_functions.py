@@ -34,7 +34,7 @@ def get_distance_dict(file_path):
         distance_dict[combination] = calculate_distance(
             points_dict[combination[0]], points_dict[combination[1]])
 
-    return distance_dict
+    return distance_dict, points_dict
 
 
 def twoOpt(tour, distance_dict):
