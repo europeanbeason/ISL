@@ -126,3 +126,22 @@ if __name__ == "__main__":
     # Wait for all processes to finish
     p1.join()
     p2.join()
+
+
+def optimize_file(distance_dict, points):
+    import time
+    start_time = time.time()
+    initial_tour = nearest_neighbour_v2(
+        distance_dict=distance_dict, points=points)
+    two_opt_tour = twoOpt(initial_tour, distance_dict)
+    end_time = time.time()
+    elapsed_time_seconds = end_time - start_time
+    elapsed_time_minutes = elapsed_time_seconds / 60
+
+    if elapsed_time_minutes < 5:
+        optimal_tour = optimize_tsp_with_initial_solution(
+            distance_dict, points, initial_tour, 5 - elapsed_time_minutes)
+    else:
+        optimal_tour = two_opt_tour
+
+    return optimal_tour

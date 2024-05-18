@@ -39,7 +39,7 @@ def get_distance_dict(file_path):
     return distance_dict
 
 
-distance_dict = get_distance_dict("data\e3795.dat")
+distance_dict = get_distance_dict("data\d\d159.dat")
 points = set()
 for (i, j) in distance_dict.keys():
     points.add(i)
@@ -155,7 +155,5 @@ def twoOpt(tour, distance_dict):
 
 initial_tour = nearest_neighbour_v2(distance_dict=distance_dict, points=points)
 two_opt_tour = twoOpt(tour=initial_tour, distance_dict=distance_dict)
-
-plot_tour(points_dict=points_dict, route=initial_tour, nn=True)
 
 plot_tour(points_dict=points_dict, route=two_opt_tour, nn=True)
