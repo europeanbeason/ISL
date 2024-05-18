@@ -39,7 +39,7 @@ def get_distance_dict(file_path):
     return distance_dict
 
 
-distance_dict = get_distance_dict("data\d159.dat")
+distance_dict = get_distance_dict("data\d\d159.dat")
 points = set()
 for (i, j) in distance_dict.keys():
     points.add(i)
@@ -205,6 +205,3 @@ initial_tour = nearest_neighbour_v2(distance_dict, points)
 print(initial_tour)
 print(calculate_total_distance(distance_dict, initial_tour, True))
 plot_tour(points_dict, initial_tour, True)
-
-optimum = optimize_tsp_with_initial_solution(
-    distance_dict, points, initial_tour, 3)

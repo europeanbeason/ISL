@@ -1,6 +1,7 @@
 import itertools
 import time
 from gurobipy import Model, GRB, quicksum
+import matplotlib.pyplot as plt
 
 
 class Points:
