@@ -1,3 +1,4 @@
+
 import itertools
 import time
 from gurobipy import Model, GRB, quicksum
@@ -23,7 +24,7 @@ def get_distance_dict(file_path):
     global points_dict
     points_dict = {}
     points_dict[0] = Points(0, 0)
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         num_of_points = int(file.readline().strip())
         for i in range(1, num_of_points + 1):
             _, x, y = file.readline().split()
@@ -33,29 +34,70 @@ def get_distance_dict(file_path):
     distance_dict = {}
     for combination in itertools.permutations(points_dict.keys(), 2):
         distance_dict[combination] = calculate_distance(
-            points_dict[combination[0]], points_dict[combination[1]])
+            points_dict[combination[0]], points_dict[combination[1]]
+        )
 
     return distance_dict, points_dict
 
 
-def twoOpt(tour, distance_dict):
+def lin_kernighan(initial_tour, distance_dict, total_time, p1=5, p2=2):
+    tour = initial_tour[:-1]  # Initial tour
+    best_distance = calculate_total_distance(
+        distance_dict=distance_dict, route=tour, nn=True
+    )
+    start_time = time.time()
+
+    def generate_neighbors(t):
+        neighbors = []
+        for i in range(1, len(t) - 1):
+            for j in range(i + 1, len(t)):
+                neighbor = t[:]
+                neighbor[i: j + 1] = reversed(t[i: j + 1])
+                neighbors.append(neighbor)
+        return neighbors
+
+    improved = True
+    while improved:
+        improved = False
+        for k in range(1, p1 + 1):
+            for t_prime in generate_neighbors(tour):
+                if time.time() - start_time > total_time * 60:
+                    print("Time exceeded " + str(total_time) + "minutes")
+                    return tour
+                t_prime_distance = calculate_total_distance(
+                    distance_dict=distance_dict, route=t_prime, nn=True
+                )
+                if t_prime_distance < best_distance:
+                    tour = t_prime
+                    best_distance = t_prime_distance
+                    improved = True
+                    break
+            if improved:
+                break
+    tour.append(0)
+    return tour
+
+
+def twoOpt(tour, distance_dict, total):
     start_time = time.time()
     tour = tour[:-1]
     n = len(tour)
     improvement = True
     old_distance = calculate_total_distance(
-        distance_dict=distance_dict, route=tour, nn=True)
+        distance_dict=distance_dict, route=tour, nn=True
+    )
     while improvement:
         improvement = False
-        for i in range(1, n-1):
-            if time.time() - start_time > 300:  # 300 seconds = 5 minutes
-                print("Time exceeded 5 minutes")
+        for i in range(1, n - 1):
+            if time.time() - start_time > total * 60:  # 300 seconds = 5 minutes
+                print("Time exceeded " + str(total) + "minutes")
                 return tour
 
-            for j in range(i+1, n):
-                new_tour = tour[0:i] + tour[i:j + 1][::-1] + tour[j + 1:n]
+            for j in range(i + 1, n):
+                new_tour = tour[0:i] + tour[i: j + 1][::-1] + tour[j + 1: n]
                 new_distance = calculate_total_distance(
-                    distance_dict=distance_dict, route=new_tour, nn=True)
+                    distance_dict=distance_dict, route=new_tour, nn=True
+                )
                 if new_distance < old_distance:
                     print("Improvement found: New length =", new_distance)
                     tour = new_tour
@@ -75,28 +117,35 @@ def plot_tour(points, route, nn=False):
 
     # Plot the points
     for point in points.values():
-        plt.plot(point.x_coordinate, point.y_coordinate, 'bo')
+        plt.plot(point.x_coordinate, point.y_coordinate, "bo")
 
     if nn:
         # Draw the paths
-        for k in range(len(route)-1):
+        for k in range(len(route) - 1):
             i = route[k]
-            j = route[k+1]
-            plt.plot([points[i].x_coordinate, points[j].x_coordinate], [
-                points[i].y_coordinate, points[j].y_coordinate], 'b-')
+            j = route[k + 1]
+            plt.plot(
+                [points[i].x_coordinate, points[j].x_coordinate],
+                [points[i].y_coordinate, points[j].y_coordinate],
+                "b-",
+            )
     else:
         for i, j in route:
-            plt.plot([points[i].x_coordinate, points[j].x_coordinate], [
-                points[i].y_coordinate, points[j].y_coordinate], 'b-')
+            plt.plot(
+                [points[i].x_coordinate, points[j].x_coordinate],
+                [points[i].y_coordinate, points[j].y_coordinate],
+                "b-",
+            )
 
-    plt.xlabel('X coordinate')
-    plt.ylabel('Y coordinate')
-    plt.title('Optimal Tour')
+    plt.xlabel("X coordinate")
+    plt.ylabel("Y coordinate")
+    plt.title("Optimal Tour")
     plt.grid(True)
     plt.show()
 
 
 # plot_tour(points_dict, route)
+
 
 def nearest_neighbour_v2(distance_dict, points):
     print("NN started")
@@ -107,7 +156,7 @@ def nearest_neighbour_v2(distance_dict, points):
         point_to_connections[p2][p1] = dist
 
     def find_nearest_point(point, unvisited_points):
-        closest_point, min_distance = None, float('inf')
+        closest_point, min_distance = None, float("inf")
         connections = point_to_connections[point]
         for p, dist in connections.items():
             if p in unvisited_points and dist < min_distance:
@@ -132,9 +181,9 @@ def nearest_neighbour_v2(distance_dict, points):
 def calculate_total_distance(distance_dict, route, nn=False):
     total_distance = 0
     if nn:
-        for k in range(len(route)-1):
+        for k in range(len(route) - 1):
             i = route[k]
-            j = route[k+1]
+            j = route[k + 1]
             total_distance += distance_dict[(int(i), int(j))]
     else:
         for travel in route:
@@ -165,32 +214,41 @@ def optimize_tsp_with_initial_solution(distance_dict, points, initial_tour, time
 
     # Decision variables: x[i, j] is 1 if the path is part of the route, else 0
     vars = {}
-    for (i, j) in distance_dict.keys():
+    for i, j in distance_dict.keys():
         vars[i, j] = model.addVar(
-            obj=distance_dict[i, j], vtype=GRB.BINARY, name=f"x_{i}_{j}")
+            obj=distance_dict[i, j], vtype=GRB.BINARY, name=f"x_{i}_{j}"
+        )
 
     # Subtour elimination variables: u[i] is the position of point i in the tour
-    u = model.addVars(points, vtype=GRB.CONTINUOUS, name='u')
+    u = model.addVars(points, vtype=GRB.CONTINUOUS, name="u")
 
     # Constraints: Each city must be entered and left exactly once
     for i in points:
-        model.addConstr(quicksum(vars[i, j] for j in points if (
-            i, j) in vars) == 1, name=f"enter_{i}")
-        model.addConstr(quicksum(vars[j, i] for j in points if (
-            j, i) in vars) == 1, name=f"leave_{i}")
+        model.addConstr(
+            quicksum(vars[i, j] for j in points if (i, j) in vars) == 1,
+            name=f"enter_{i}",
+        )
+        model.addConstr(
+            quicksum(vars[j, i] for j in points if (j, i) in vars) == 1,
+            name=f"leave_{i}",
+        )
 
     # Subtour elimination constraints (skip for the start city 0)
     for i in points:
         for j in points:
             if i != j and (i != 0 and j != 0) and (i, j) in vars:
-                model.addConstr(u[i] - u[j] + len(points) * vars[i, j]
-                                <= len(points) - 1, name=f"subtour_{i}_{j}")
+                model.addConstr(
+                    u[i] - u[j] + len(points) * vars[i, j] <= len(points) - 1,
+                    name=f"subtour_{i}_{j}",
+                )
 
     # Constraint for point 0 to start and end the tour
-    model.addConstr(quicksum(vars[0, j] for j in points if (
-        0, j) in vars) == 1, name="leave_0")
-    model.addConstr(quicksum(vars[i, 0] for i in points if (
-        i, 0) in vars) == 1, name="enter_0")
+    model.addConstr(
+        quicksum(vars[0, j] for j in points if (0, j) in vars) == 1, name="leave_0"
+    )
+    model.addConstr(
+        quicksum(vars[i, 0] for i in points if (i, 0) in vars) == 1, name="enter_0"
+    )
 
     # Load initial solution
     print("Initial solution loaded...")
@@ -198,7 +256,7 @@ def optimize_tsp_with_initial_solution(distance_dict, points, initial_tour, time
 
     # Set the model to focus on finding a feasible solution quickly
     model.Params.timeLimit = time * 60
-    model.setParam('MIPFocus', 1)
+    model.setParam("MIPFocus", 1)
 
     # Optimize the model
     model.optimize()
@@ -207,7 +265,7 @@ def optimize_tsp_with_initial_solution(distance_dict, points, initial_tour, time
         # A feasible solution is available
         mip_gap = model.MIPGap
         print(f"The solution is within {mip_gap:.2%} of the optimal value.")
-        solution = model.getAttr('X', vars)
+        solution = model.getAttr("X", vars)
         route = [(i, j) for i, j in solution if solution[i, j] > 0.5]
         objective_value = model.ObjVal
         return route

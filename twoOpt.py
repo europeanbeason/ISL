@@ -39,7 +39,7 @@ def get_distance_dict(file_path):
     return distance_dict
 
 
-distance_dict = get_distance_dict("data\d\d159.dat")
+distance_dict = get_distance_dict("data\d\d1432.dat")
 points = set()
 for (i, j) in distance_dict.keys():
     points.add(i)
@@ -131,7 +131,7 @@ def twoOpt(tour, distance_dict):
     while improvement:
         improvement = False
         for i in range(1, n-1):
-            if time.time() - start_time > 300:  # 300 seconds = 5 minutes
+            if time.time() - start_time > 3*60:  # 300 seconds = 5 minutes
                 print("Time exceeded 5 minutes")
                 return tour
 
