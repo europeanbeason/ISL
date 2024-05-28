@@ -39,7 +39,7 @@ def get_distance_dict(file_path):
     return distance_dict
 
 
-distance_dict = get_distance_dict("data\d\d159.dat")
+distance_dict = get_distance_dict(r"data\e\e1400.dat")
 points = set()
 for (i, j) in distance_dict.keys():
     points.add(i)
@@ -200,30 +200,6 @@ def optimize_tsp_with_initial_solution(distance_dict, points, initial_tour, time
         return None
 
 
-# initial_tour = nearest_neighbour_v2(distance_dict, points)
-opt = [(0, 1), (1, 159), (2, 4), (3, 2), (4, 156), (5, 154), (6, 5), (7, 152), (8, 7), (9, 8), (10, 9), (11, 10), (12, 13), (13, 14), (14, 15), (15, 17), (16, 143), (17, 16), (18, 63), (19, 18), (20, 19), (21, 20), (22, 21), (23, 22), (24, 23), (25, 24), (26, 25), (27, 26), (28, 27), (29, 28), (30, 29), (31, 30), (32, 31), (33, 35), (34, 33), (35, 32), (36, 37), (37, 34), (38, 36), (39, 40), (40, 121), (41, 39), (42, 41), (43, 42), (44, 43), (45, 44), (46, 45), (47, 46), (48, 91), (49, 47), (50, 49), (51, 50), (52, 51), (53, 52), (54, 53), (55, 54), (56, 55), (57, 56), (58, 57), (59, 58), (60, 59), (61, 60), (62, 61), (63, 0), (64, 62), (65, 64), (66, 65), (67, 66), (68, 67), (69, 68), (70, 69), (71, 70), (72, 71), (73, 72), (74, 75), (75, 86), (76, 74), (77, 76), (78, 73), (79, 78), (80, 79), (81, 80), (82, 81), (83, 82), (84, 83), (85, 84),
-       (86, 97), (87, 85), (88, 96), (89, 88), (90, 94), (91, 77), (92, 90), (93, 92), (94, 89), (95, 87), (96, 95), (97, 98), (98, 99), (99, 100), (100, 101), (101, 102), (102, 103), (103, 104), (104, 105), (105, 106), (106, 107), (107, 118), (108, 93), (109, 108), (110, 109), (111, 110), (112, 111), (113, 112), (114, 122), (115, 114), (116, 115), (117, 116), (118, 117), (119, 48), (120, 119), (121, 120), (122, 123), (123, 135), (124, 113), (125, 124), (126, 127), (127, 128), (128, 129), (129, 130), (130, 131), (131, 132), (132, 134), (133, 138), (134, 133), (135, 136), (136, 38), (137, 139), (138, 137), (139, 140), (140, 141), (141, 142), (142, 12), (143, 144), (144, 145), (145, 146), (146, 147), (147, 148), (148, 150), (149, 11), (150, 149), (151, 155), (152, 153), (153, 6), (154, 151), (155, 125), (156, 157), (157, 158), (158, 126), (159, 3)]
-print(opt)
-plot_tour(points=points_dict, route=opt, nn=False)
-
-
-tuples_dict = {t[0]: t for t in opt}
-
-# Initialize the sorted list starting with the tuple that starts with 0
-tuple_sorted = [tuples_dict[0]]
-
-# Build the sorted list
-i = 0
-current = tuples_dict[0][1]
-while current in tuples_dict:
-    tuple_sorted.append(tuples_dict[current])
-    current = tuples_dict[current][1]
-    if current == 0 and i != 0:
-        break
-    i += 1
-# Print the sorted list
-print(tuple_sorted)
-plot_tour(points=points_dict, route=tuple_sorted, nn=False)
-
-route_nn = [travel[0] for travel in tuple_sorted]
-plot_tour(points=points_dict, route=route_nn, nn=True)
+initial_tour = nearest_neighbour_v2(distance_dict, points)
+print(calculate_total_distance(distance_dict, initial_tour, True))
+plot_tour(points_dict, initial_tour, True)

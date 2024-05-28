@@ -32,7 +32,7 @@ def get_distance_dict(file_path):
             points_dict[i] = Points(float(x), float(y))
 
     # Generate point combinations and calculate distances
-    distance_dict = {}
+    distance_dict = {(0, 0): 0}
     for combination in itertools.permutations(points_dict.keys(), 2):
         distance_dict[combination] = calculate_distance(
             points_dict[combination[0]], points_dict[combination[1]]
@@ -42,7 +42,7 @@ def get_distance_dict(file_path):
 
 
 def lin_kernighan(initial_tour, distance_dict, total_time, p1=5, p2=2):
-    tour = initial_tour[:-1]  # Initial tour
+    tour = initial_tour  # Initial tour
     best_distance = calculate_total_distance(
         distance_dict=distance_dict, route=tour, nn=True
     )
@@ -64,6 +64,7 @@ def lin_kernighan(initial_tour, distance_dict, total_time, p1=5, p2=2):
             for t_prime in generate_neighbors(tour):
                 if time.time() - start_time > total_time * 60:
                     print("Time exceeded " + str(total_time) + "minutes")
+                    tour.append(0)
                     return tour
                 t_prime_distance = calculate_total_distance(
                     distance_dict=distance_dict, route=t_prime, nn=True
@@ -81,7 +82,7 @@ def lin_kernighan(initial_tour, distance_dict, total_time, p1=5, p2=2):
 
 def twoOpt(tour, distance_dict, total):
     start_time = time.time()
-    tour = tour[:-1]
+    tour = tour
     n = len(tour)
     improvement = True
     old_distance = calculate_total_distance(
@@ -94,7 +95,7 @@ def twoOpt(tour, distance_dict, total):
                 print("Time exceeded " + str(total) + "minutes")
                 return tour
 
-            for j in range(i + 1, n):
+            for j in range(i + 1, n-1):
                 new_tour = tour[0:i] + tour[i: j + 1][::-1] + tour[j + 1: n]
                 new_distance = calculate_total_distance(
                     distance_dict=distance_dict, route=new_tour, nn=True
@@ -109,7 +110,6 @@ def twoOpt(tour, distance_dict, total):
                 old_distance = new_distance
                 print("Improvement made in inner loop, returning to the outer loop.")
                 break
-    tour.append(0)
     return tour
 
 

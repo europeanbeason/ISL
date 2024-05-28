@@ -21,7 +21,6 @@ def calculate_distance(point1, point2):
 
 
 def get_distance_dict(file_path):
-    global points_dict
     points_dict = {}
     points_dict[0] = Points(0, 0)
     with open(file_path, 'r') as file:
@@ -31,7 +30,7 @@ def get_distance_dict(file_path):
             points_dict[i] = Points(float(x), float(y))
 
     # Generate point combinations and calculate distances
-    distance_dict = {}
+    distance_dict = {(0, 0): 0}
     for combination in itertools.permutations(points_dict.keys(), 2):
         distance_dict[combination] = calculate_distance(
             points_dict[combination[0]], points_dict[combination[1]])
@@ -39,15 +38,16 @@ def get_distance_dict(file_path):
     return distance_dict
 
 
-distance_dict = get_distance_dict("data\d\d1432.dat")
-points = set()
-for (i, j) in distance_dict.keys():
-    points.add(i)
-    points.add(j)
-# distance_dict = {(0, 1): 5, (0, 2): 10, (1, 2): 3,
-# (1, 0): 5, (2, 0): 10, (2, 1): 3}
-# points = [0, 1, 2]
-# route, obj = solve_tsp(distance_dict, points, 5)
+distance_dict_paths = {}
+point_set_path = {}
+for filepath in [r"data\d\d159.dat", r"data\b\b493.dat", r"data\e\e1400.dat", r"data\a\a2152.dat", r"data\d2319.dat", r"data\e\e3795.dat"]:
+    distance_dict_paths[filepath] = get_distance_dict(filepath)
+
+    points = set()
+    for (i, j) in distance_dict_paths[filepath].keys():
+        points.add(i)
+        points.add(j)
+    point_set_path[filepath] = points
 
 
 def plot_tour(points_dict, route, nn=False):
@@ -76,7 +76,7 @@ def plot_tour(points_dict, route, nn=False):
     plt.show()
 
 
-def calculate_distance(distance_dict, route, nn=False):
+def calculate_total_distance(distance_dict, route, nn=False):
     total_distance = 0
     if nn:
         for k in range(len(route)-1):
@@ -121,24 +121,26 @@ def nearest_neighbour_v2(distance_dict, points):
     return tour
 
 
-def twoOpt(tour, distance_dict):
+def twoOpt(tour, distance_dict, total):
     start_time = time.time()
-    tour = tour[:-1]
+    tour = tour
     n = len(tour)
     improvement = True
-    old_distance = calculate_distance(
-        distance_dict=distance_dict, route=tour, nn=True)
+    old_distance = calculate_total_distance(
+        distance_dict=distance_dict, route=tour, nn=True
+    )
     while improvement:
         improvement = False
-        for i in range(1, n-1):
-            if time.time() - start_time > 3*60:  # 300 seconds = 5 minutes
-                print("Time exceeded 5 minutes")
+        for i in range(1, n - 1):
+            if time.time() - start_time > total * 60:  # 300 seconds = 5 minutes
+                print("Time exceeded " + str(total) + "minutes")
                 return tour
 
-            for j in range(i+1, n):
-                new_tour = tour[0:i] + tour[i:j + 1][::-1] + tour[j + 1:n]
-                new_distance = calculate_distance(
-                    distance_dict=distance_dict, route=new_tour, nn=True)
+            for j in range(i + 1, n-1):
+                new_tour = tour[0:i] + tour[i: j + 1][::-1] + tour[j + 1: n]
+                new_distance = calculate_total_distance(
+                    distance_dict=distance_dict, route=new_tour, nn=True
+                )
                 if new_distance < old_distance:
                     print("Improvement found: New length =", new_distance)
                     tour = new_tour
@@ -153,7 +155,20 @@ def twoOpt(tour, distance_dict):
     return tour
 
 
-initial_tour = nearest_neighbour_v2(distance_dict=distance_dict, points=points)
-two_opt_tour = twoOpt(tour=initial_tour, distance_dict=distance_dict)
+distances = []
+filepaths = [r"data\d\d159.dat", r"data\b\b493.dat", r"data\e\e1400.dat",
+             r"data\a\a2152.dat", r"data\d2319.dat", r"data\e\e3795.dat"]
+for filepath in filepaths:
+    initial_tour = nearest_neighbour_v2(
+        distance_dict=distance_dict_paths[filepath], points=point_set_path[filepath])
+    two_opt_tour = twoOpt(
+        tour=initial_tour, distance_dict=distance_dict_paths[filepath], total=5)
+    distances.append(calculate_total_distance(
+        distance_dict_paths[filepath], two_opt_tour, True))
+    # plot_tour(points_dict=points_dict, route=two_opt_tour, nn=True)
 
-plot_tour(points_dict=points_dict, route=two_opt_tour, nn=True)
+
+for i in range(len(distances)):
+    print(f"File name: {filepaths[i]}")
+    print(f"Distance: {distances[i]}")
+    print("_____________________\n")

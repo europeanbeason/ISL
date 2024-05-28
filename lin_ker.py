@@ -31,7 +31,7 @@ def get_distance_dict(file_path):
             points_dict[i] = Points(float(x), float(y))
 
     # Generate point combinations and calculate distances
-    distance_dict = {}
+    distance_dict = {(0, 0): 0}
     for combination in itertools.permutations(points_dict.keys(), 2):
         distance_dict[combination] = calculate_distance(
             points_dict[combination[0]], points_dict[combination[1]]
@@ -42,16 +42,18 @@ def get_distance_dict(file_path):
 
 def calculate_total_distance(route, distance_dict):
     total_distance = 0
-    for k in range(len(route) - 1):
+    for k in range(len(route)-1):
         i = route[k]
         j = route[k + 1]
         total_distance += distance_dict[(int(i), int(j))]
     return total_distance
 
 
-def lin_kernighan(initial_tour, distance_dict, p1=5, p2=2):
-    tour = initial_tour[:-1]  # Initial tour
-    best_distance = calculate_total_distance(tour, distance_dict)
+def lin_kernighan(initial_tour, distance_dict, total_time, p1=5, p2=2):
+    tour = initial_tour  # Initial tour
+    best_distance = calculate_total_distance(
+        distance_dict=distance_dict, route=tour
+    )
     start_time = time.time()
 
     def generate_neighbors(t):
@@ -68,8 +70,13 @@ def lin_kernighan(initial_tour, distance_dict, p1=5, p2=2):
         improved = False
         for k in range(1, p1 + 1):
             for t_prime in generate_neighbors(tour):
+                if time.time() - start_time > total_time * 60:
+                    print("Time exceeded " + str(total_time) + "minutes")
+                    tour.append(0)
+                    return tour
                 t_prime_distance = calculate_total_distance(
-                    t_prime, distance_dict)
+                    distance_dict=distance_dict, route=t_prime
+                )
                 if t_prime_distance < best_distance:
                     tour = t_prime
                     best_distance = t_prime_distance
@@ -97,22 +104,28 @@ def plot_tour(tour, points_dict):
 
 
 def main():
-    file_path = "data/d/d159.dat"
-    distance_dict, points_dict = get_distance_dict(file_path)
-    points = set()
-    for i, j in distance_dict.keys():
-        points.add(i)
-        points.add(j)
-    if points_dict is None or distance_dict is None:
-        print("Error in reading data.")
-        return
-    initial_tour = nearest_neighbour_v2(distance_dict, points)
-    tour = lin_kernighan(
-        initial_tour, distance_dict)
-    print(f"Best tour: {tour}")
-    print(f"Total distance: {calculate_total_distance(tour, distance_dict)}")
+    distances = []
+    distance_dict_paths = {}
+    point_set_path = {}
+    filepaths = [r"data\d\d159.dat", r"data\b\b493.dat", r"data\e\e1400.dat"]
+    for filepath in filepaths:
+        distance_dict_paths[filepath] = get_distance_dict(filepath)[0]
+        points = set()
+        for (i, j) in distance_dict_paths[filepath].keys():
+            points.add(i)
+            points.add(j)
+        point_set_path[filepath] = points
+        initial_tour = nearest_neighbour_v2(
+            distance_dict_paths[filepath], point_set_path[filepath])
+        tour = lin_kernighan(
+            initial_tour, distance_dict_paths[filepath], 5)
+        distances.append(calculate_total_distance(
+            tour, distance_dict_paths[filepath]))
 
-    plot_tour(tour, points_dict)
+    for i in range(len(distances)):
+        print(f"File name: {filepaths[i]}")
+        print(f"Distance: {distances[i]}")
+        print("_____________________\n")
 
 
 if __name__ == "__main__":
