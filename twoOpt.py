@@ -155,20 +155,23 @@ def twoOpt(tour, distance_dict, total):
     return tour
 
 
-distances = []
-filepaths = [r"data\d\d159.dat", r"data\b\b493.dat", r"data\e\e1400.dat",
-             r"data\a\a2152.dat", r"data\d2319.dat", r"data\e\e3795.dat"]
+distances_NN = []
+distances_2opt = []
+filepaths = [r"data\d\d159.dat"]
 for filepath in filepaths:
     initial_tour = nearest_neighbour_v2(
         distance_dict=distance_dict_paths[filepath], points=point_set_path[filepath])
+    distances_NN.append(calculate_total_distance(
+        distance_dict_paths[filepath], initial_tour, True))
     two_opt_tour = twoOpt(
         tour=initial_tour, distance_dict=distance_dict_paths[filepath], total=5)
-    distances.append(calculate_total_distance(
+    distances_2opt.append(calculate_total_distance(
         distance_dict_paths[filepath], two_opt_tour, True))
     # plot_tour(points_dict=points_dict, route=two_opt_tour, nn=True)
 
 
-for i in range(len(distances)):
+for i in range(len(distances_2opt)):
     print(f"File name: {filepaths[i]}")
-    print(f"Distance: {distances[i]}")
+    print(f"Distance NN: {distances_NN[i]}")
+    print(f"Distance 2OPT: {distances_2opt[i]}")
     print("_____________________\n")

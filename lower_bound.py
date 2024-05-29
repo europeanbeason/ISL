@@ -40,7 +40,30 @@ def one_tree_lower_bound(distance_dict, start_city='A'):
     return one_tree_cost
 
 
-# Example usage
-distance_dict, points_dict = get_distance_dict("data\d2319.dat")
 
-print(one_tree_lower_bound(distance_dict, start_city=0))
+
+distance_dict_paths = {}
+point_set_path = {}
+for filepath in [r"data\d\d159.dat", r"data\b\b493.dat", r"data\e\e1400.dat", r"data\a\a2152.dat", r"data\d2319.dat", r"data\e\e3795.dat"]:
+    distance_dict_paths[filepath] = get_distance_dict(filepath)[0]
+
+    points = set()
+    for (i, j) in distance_dict_paths[filepath].keys():
+        points.add(i)
+        points.add(j)
+    point_set_path[filepath] = points
+
+distances = []
+filepaths = [r"data\d\d159.dat", r"data\b\b493.dat", r"data\e\e1400.dat",
+             r"data\a\a2152.dat", r"data\d2319.dat", r"data\e\e3795.dat"]
+for filepath in filepaths:
+    initial_tour = one_tree_lower_bound(
+        distance_dict=distance_dict_paths[filepath], start_city=0)
+    distances.append(initial_tour)
+    # plot_tour(points_dict=points_dict, route=two_opt_tour, nn=True)
+
+
+for i in range(len(distances)):
+    print(f"File name: {filepaths[i]}")
+    print(f"Distance: {distances[i]}")
+    print("_____________________\n")
