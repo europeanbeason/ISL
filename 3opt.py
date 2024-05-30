@@ -3,42 +3,61 @@ import time
 from all_functions import calculate_total_distance, plot_tour, get_distance_dict, nearest_neighbour_v2, twoOpt
 
 
-import time
-import itertools
+def generate_3opt_variants(path, i, j, k):
+    """
+    Generate all possible 3-opt variants for the path given three breakpoints i, j, k.
+    """
+    a, b, c, d, e, f = path[i-1], path[i], path[j -
+                                                1], path[j], path[k-1], path[k % len(path)]
 
+    variants = [
+        path[:i] + path[i:j][::-1] + path[j:k] +
+        path[k:],  # Case 1: reverse (i,j)
+        path[:i] + path[i:j] + path[j:k][::-1] + \
+        path[k:],  # Case 2: reverse (j,k)
+        # Case 3: swap (i,j) and (j,k)
+        path[:i] + path[j:k] + path[i:j] + path[k:],
+        # Case 4: reverse (i,j) and swap with (j,k)
+        path[:i] + path[j:k] + path[i:j][::-1] + path[k:],
+        path[:i] + path[i:j][::-1] + path[j:k][::-1] + \
+        path[k:],  # Case 5: reverse (i,j) and (j,k)
+        path[:i] + path[k-1:j-1:-1] + path[i:j][::-1] + \
+        path[k:],  # Case 6: reverse (j,k) and swap with (i,j)
+        path[:i] + path[k-1:j-1:-1] + path[i:j] + \
+        path[k:],  # Case 7: reverse all three segments
+    ]
 
-def swap_3opt(path, i, j, k):
-    return path[:i] + path[i:j][::-1] + path[j:k][::-1] + path[k:]
+    return variants
 
 
 def improve_3opt(path, distance_dict, total=5):
     start_time = time.time()
     n = len(path)
-    improvement = True
     old_distance = calculate_total_distance(
         route=path, distance_dict=distance_dict, nn=True)
+    improvement = True
 
-    while improvement:
+    while improvement and (time.time() - start_time) < total * 60:
         improvement = False
-        # Generate combinations on the fly to save memory
         for (i, j, k) in itertools.combinations(range(1, n), 3):
-            if time.time() - start_time > total * 60:
-                print(f'Time exceeded {total} minutes')
-                return path
-
-            if k - i == 1:
+            if k - j == 1 or j - i == 1:
                 continue  # Skip adjacent indices
 
-            new_path = swap_3opt(path, i, j, k)
-            new_distance = calculate_total_distance(
-                route=new_path, distance_dict=distance_dict, nn=True)
+            variants = generate_3opt_variants(path, i, j, k)
 
-            if new_distance < old_distance:
-                print(f'Improvement found: New length = {new_distance}')
-                path = new_path
-                old_distance = new_distance
-                improvement = True
-                break  # Exit for loop early to restart with the new path
+            for variant in variants:
+                new_distance = calculate_total_distance(
+                    route=variant, distance_dict=distance_dict, nn=True)
+
+                if new_distance < old_distance:
+                    print(f'Improvement found: New length = {new_distance}')
+                    path = variant
+                    old_distance = new_distance
+                    improvement = True
+                    break  # Exit inner loop to restart with the new path
+
+            if improvement:
+                break  # Exit outer loop to restart with the new path
 
     return path
 
