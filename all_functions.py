@@ -314,3 +314,65 @@ def one_tree_lower_bound(distance_dict, start_city='A'):
     one_tree_cost = mst_cost + shortest_edges[0] + shortest_edges[1]
 
     return one_tree_cost
+
+
+def generate_3opt_variants(path, i, j, k):
+    """
+    Generate all possible 3-opt variants for the path given three breakpoints i, j, k.
+    """
+
+    variants = [
+        path[:i] + path[i:j][::-1] + path[j:k] +
+        path[k:],  # Case 1: reverse (i,j)
+        path[:i] + path[i:j] + path[j:k][::-1] + \
+        path[k:],  # Case 2: reverse (j,k)
+        # Case 3: swap (i,j) and (j,k)
+        path[:i] + path[j:k] + path[i:j] + path[k:],
+        # Case 4: reverse (i,j) and swap with (j,k)
+        path[:i] + path[j:k] + path[i:j][::-1] + path[k:],
+        path[:i] + path[i:j][::-1] + path[j:k][::-1] + \
+        path[k:],  # Case 5: reverse (i,j) and (j,k)
+        path[:i] + path[k-1:j-1:-1] + path[i:j][::-1] + \
+        path[k:],  # Case 6: reverse (j,k) and swap with (i,j)
+        path[:i] + path[k-1:j-1:-1] + path[i:j] + \
+        path[k:],  # Case 7: reverse all three segments
+    ]
+
+    return variants
+
+
+def improve_3opt(path, distance_dict, total=5):
+    start_time = time.time()
+    n = len(path)
+    old_distance = calculate_total_distance(
+        route=path, distance_dict=distance_dict, nn=True)
+    improvement = True
+
+    while improvement and (time.time() - start_time) < total * 60:
+        improvement = False
+        for (i, j, k) in itertools.combinations(range(1, n), 3):
+            if k - j == 1 or j - i == 1:
+                continue  # Skip adjacent indices
+
+            variants = generate_3opt_variants(path, i, j, k)
+
+            for variant in variants:
+                new_distance = calculate_total_distance(
+                    route=variant, distance_dict=distance_dict, nn=True)
+
+                if new_distance < old_distance:
+                    print(f'Improvement found: New length = {new_distance}')
+                    path = variant
+                    old_distance = new_distance
+                    improvement = True
+                    break  # Exit inner loop to restart with the new path
+
+            if improvement:
+                break  # Exit outer loop to restart with the new path
+
+    return path
+
+
+def solve_tsp_3opt(distance_dict, initial_tour, total=5):
+    optimized_path = improve_3opt(initial_tour, distance_dict, total)
+    return optimized_path

@@ -7,8 +7,6 @@ def generate_3opt_variants(path, i, j, k):
     """
     Generate all possible 3-opt variants for the path given three breakpoints i, j, k.
     """
-    a, b, c, d, e, f = path[i-1], path[i], path[j -
-                                                1], path[j], path[k-1], path[k % len(path)]
 
     variants = [
         path[:i] + path[i:j][::-1] + path[j:k] +
