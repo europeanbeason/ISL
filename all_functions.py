@@ -16,7 +16,7 @@ class Points:
 
 
 def calculate_distance(point1, point2):
-    x_distance = 1.1 * abs(point1.x_coordinate - point2.x_coordinate)
+    x_distance = 1/0.9 * abs(point1.x_coordinate - point2.x_coordinate)
     y_distance = abs(point1.y_coordinate - point2.y_coordinate)
     return max(x_distance, y_distance)
 
@@ -42,7 +42,7 @@ def get_distance_dict(file_path):
 
 
 def lin_kernighan(initial_tour, distance_dict, total_time, p1=5, p2=2):
-    tour = initial_tour  # Initial tour
+    tour = initial_tour
     best_distance = calculate_total_distance(
         distance_dict=distance_dict, route=tour, nn=True
     )
@@ -91,7 +91,7 @@ def twoOpt(tour, distance_dict, total):
     while improvement:
         improvement = False
         for i in range(1, n - 1):
-            if time.time() - start_time > total * 60:  # 300 seconds = 5 minutes
+            if time.time() - start_time > total * 60:
                 print("Time exceeded " + str(total) + "minutes")
                 return tour
 
@@ -101,14 +101,14 @@ def twoOpt(tour, distance_dict, total):
                     distance_dict=distance_dict, route=new_tour, nn=True
                 )
                 if new_distance < old_distance:
-                    print("Improvement found: New length =", new_distance)
+                    # print("Improvement found: New length =", new_distance)
                     tour = new_tour
                     improvement = True
                     break
 
             if improvement:
                 old_distance = new_distance
-                print("Improvement made in inner loop, returning to the outer loop.")
+                # print("Improvement made in inner loop, returning to the outer loop.")
                 break
     return tour
 
@@ -145,9 +145,6 @@ def plot_tour(points, route, nn=False):
     plt.show()
 
 
-# plot_tour(points_dict, route)
-
-
 def nearest_neighbour_v2(distance_dict, points):
     print("NN started")
 
@@ -169,7 +166,7 @@ def nearest_neighbour_v2(distance_dict, points):
     unvisited_points.remove(0)
     current_point = 0
     while unvisited_points:
-        print(f"Cities left to visit: {len(unvisited_points)}")
+        # print(f"Cities left to visit: {len(unvisited_points)}")
         nearest_point = find_nearest_point(current_point, unvisited_points)
         tour.append(nearest_point)
         unvisited_points.remove(nearest_point)
@@ -194,20 +191,16 @@ def calculate_total_distance(distance_dict, route, nn=False):
 
 
 def load_initial_solution(model, initial_tour, vars, u):
-    # Reset the start attribute for all variables to 0
     for var in vars.values():
         var.start = 0
 
-    # Set the start attribute to 1 for edges in the initial tour
     tour_edges = zip(initial_tour[:-1], initial_tour[1:])
     for i, j in tour_edges:
         if (i, j) in vars:
             vars[i, j].start = 1
 
-    # Initialize subtour elimination variables based on the order in the tour
-    # Exclude the return to the start
     for index, city in enumerate(initial_tour[:-1]):
-        u[city].start = index + 1  # Position in the tour, starting from 1
+        u[city].start = index + 1
 
 
 def optimize_tsp_with_initial_solution(distance_dict, points, initial_tour, time):
@@ -348,7 +341,7 @@ def improve_3opt(path, distance_dict, total=5):
         route=path, distance_dict=distance_dict, nn=True)
     improvement = True
 
-    while improvement and (time.time() - start_time) < total * 60:
+    while improvement:
         improvement = False
         for (i, j, k) in itertools.combinations(range(1, n), 3):
             if k - j == 1 or j - i == 1:
@@ -360,8 +353,12 @@ def improve_3opt(path, distance_dict, total=5):
                 new_distance = calculate_total_distance(
                     route=variant, distance_dict=distance_dict, nn=True)
 
+                if (time.time() - start_time) > total * 60:
+                    print("Time exceeded 5 minutes")
+                    return path
+
                 if new_distance < old_distance:
-                    print(f'Improvement found: New length = {new_distance}')
+                    # print(f'Improvement found: New length = {new_distance}')
                     path = variant
                     old_distance = new_distance
                     improvement = True

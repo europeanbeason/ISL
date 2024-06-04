@@ -12,7 +12,7 @@ from all_functions import (
     twoOpt,
     optimize_tsp_with_initial_solution,
     calculate_total_distance,
-    lin_kernighan,
+    solve_tsp_3opt,
     one_tree_lower_bound
 )
 import concurrent.futures
@@ -117,18 +117,23 @@ def optimize_file(distance_dict, points, queue, total_time):
         initial_tour = nearest_neighbour_v2(
             distance_dict=distance_dict, points=points)
         queue.put("NN completed, 2opt started\n")
-        if len(points) < 1600:
-            print("Lin-Kernighan")
-            second_stage_tour = lin_kernighan(
-                initial_tour, distance_dict, total_time)
+        if len(points) < 1500:
+            print("3-opt")
+            second_stage_tour = solve_tsp_3opt(
+                initial_tour=initial_tour, distance_dict=distance_dict, total=total_time)
+            print("3opt completed\n")
+            queue.put(
+                f"3opt completed in {round(abs((start_time - time.time())/60),2)}\n")
         else:
-            second_stage_tour = twoOpt(initial_tour, distance_dict, total_time)
-        queue.put("2opt completed\n")
+            second_stage_tour = twoOpt(
+                initial_tour, distance_dict, total_time)
+            queue.put(
+                f"2opt completed in {round(abs((start_time - time.time())/60),2)}\n")
         end_time = time.time()
         elapsed_time_seconds = end_time - start_time
         elapsed_time_minutes = elapsed_time_seconds / 60
         print(f"Time left: {total_time - elapsed_time_minutes} minutes.")
-        if elapsed_time_minutes < total_time:
+        if elapsed_time_minutes < total_time - 0.5:
             optimal_tour = (
                 optimize_tsp_with_initial_solution(
                     distance_dict,
@@ -138,10 +143,8 @@ def optimize_file(distance_dict, points, queue, total_time):
                 ),
                 False,
             )
-            queue.put("Optimization with initial solution completed\n")
         else:
             optimal_tour = (second_stage_tour, True)
-            queue.put("2opt tour is optimal\n")
 
         lower_bound = one_tree_lower_bound(distance_dict, 0)
         return (optimal_tour, lower_bound)

@@ -66,11 +66,10 @@ def solve_tsp_3opt(distance_dict, initial_tour, total=5):
 
 
 distance_dict_paths = {}
-points_dict_dict = {}
 point_set_path = {}
-for filepath in [r"data\e\e3795.dat"]:
-    distance_dict_paths[filepath], points_dict_dict[filepath] = get_distance_dict(
-        filepath)
+for filepath in [r"data\d\d159.dat", r"data\b\b493.dat", r"data\e\e1400.dat", r"data\a\a2152.dat", r"data\d2319.dat", r"data\e\e3795.dat"]:
+    distance_dict_paths[filepath] = get_distance_dict(filepath)[0]
+
     points = set()
     for (i, j) in distance_dict_paths[filepath].keys():
         points.add(i)
@@ -78,17 +77,17 @@ for filepath in [r"data\e\e3795.dat"]:
     point_set_path[filepath] = points
 
 distances_NN = []
-distances_2opt = []
 distances_3opt = []
-filepaths = [r"data\e\e3795.dat"]
+filepaths = [r"data\d\d159.dat", r"data\b\b493.dat", r"data\e\e1400.dat",
+             r"data\a\a2152.dat", r"data\d2319.dat", r"data\e\e3795.dat"]
 for filepath in filepaths:
     initial_tour = nearest_neighbour_v2(
         distance_dict=distance_dict_paths[filepath], points=point_set_path[filepath])
     distances_NN.append(calculate_total_distance(
         distance_dict_paths[filepath], initial_tour, True))
-    three_opt_tour = solve_tsp_3opt(
-        initial_tour=initial_tour, distance_dict=distance_dict_paths[filepath], total=2)
-    plot_tour(points=points_dict_dict[filepath], route=three_opt_tour, nn=True)
+
+    three_opt_tour = twoOpt(
+        tour=initial_tour, distance_dict=distance_dict_paths[filepath], total=10)
     distances_3opt.append(calculate_total_distance(
         distance_dict_paths[filepath], three_opt_tour, True))
     # plot_tour(points_dict=points_dict, route=two_opt_tour, nn=True)
@@ -97,6 +96,5 @@ for filepath in filepaths:
 for i in range(len(distances_3opt)):
     print(f"File name: {filepaths[i]}")
     print(f"Distance NN: {distances_NN[i]}")
-    print(f"Distance 2OPT: {distances_2opt[i]}")
-    print(f"Distance 3OPT: {distances_3opt[i]}")
+    print(f"Distance 2OPT: {distances_3opt[i]}")
     print("_____________________\n")
